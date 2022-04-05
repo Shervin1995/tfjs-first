@@ -1,46 +1,46 @@
 import React, { Component } from 'react';
 import * as tf from '@tensorflow/tfjs';
+import * as tfvis from '@tensorflow/tfjs-vis';
 
 
 //
 class Childone extends Component{
     constructor(props){
         super(props);
-
+        this.visualize = this.visualize.bind(this)
     }
 
     componentDidMount(){
         
-        // Define a model for linear regression. 
-        
-        const dense = tf.layers.dense({
-            units: 1, 
-            inputShape: [1]
+        // read csv
+        const d = tf.data.csv(require("../../data/1.csv"))
+        // const d1 = d.take(10)
+        // d1.toArray().then(res =>  console.log(res))
+
+        //
+        const points = d.map(record => ({
+            x: record.sqft_living,
+            y: record.price
+        }));
+
+        points.toArray().then(res => {
+            this.visualize(res)
+        })
+ 
+       
+    }
+
+    visualize(pointsArr){
+
+        tfvis.render.scatterplot({
+            name: "my first plot ;)"
+        },{
+            values: [pointsArr],
+            series: ["Blue Dots"]
+        },{
+            xLabel: "sqft living",
+            yLabel: "Price"
         });
-        
-        const model = tf.sequential();
-        model.add(dense);
-
-        // Prepare for training
-        model.compile({
-            loss: 'meanSquaredError', 
-            optimizer: 'sgd'
-        });
-
-        // training data
-        const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]);
-        const ys = tf.tensor2d([1, 3, 5, 7], [4, 1]);
-
-        // Train 
-        model.fit(xs, ys).then(() => {
-
-            // print
-            model
-            .predict(tf.tensor2d([5], [1, 1]))
-            .print();
-
-        });
-
 
     }
 
